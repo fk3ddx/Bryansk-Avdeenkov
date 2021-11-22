@@ -1,6 +1,6 @@
 import sys
 
-import random
+import sqlite3
 from PyQt5 import uic
 from PyQt5.QtGui import QPainter, QColor
 from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow
@@ -9,23 +9,36 @@ from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow
 class Example(QMainWindow):
     def __init__(self):
         super().__init__()
-        uic.loadUi('UI.ui', self)
-        self.pushButton.clicked.connect(self.paint)
+        uic.loadUi('main.ui', self)
+        self.pushButton.clicked.connect(self.show)
+        self.con = sqlite3.connect("coffee.sqlite")
 
-    def paintEvent(self, event):
-        qp = QPainter()
-        qp.begin(self)
-        self.draw_flag(qp)
-        qp.end()
+    def show(self):
+        cur = self.con.cursor()
+        que = 'SELECT * FROM coffee'
+        result = cur.execute(que).fetchall()
 
-    def draw_flag(self, qp):
-        qp.setBrush(QColor(255, 255, 0))
-        num_ = random.randint(0, 1000)
-        qp.drawEllipse(180, 100, num_, num_)
-
-    def paint(self):
-        self.do_paint = True
-        self.repaint()
+        # Заполнили размеры таблицы
+        self.resultWidget.setRowCount(len(result))
+        self.resultWidget.setColumnCount(len(result[0]))
+        # Устанавливаем заголовки таблицы
+        self.resultWidget.setHorizontalHeaderLabels(
+            ["id", "название сорта", "степень обжарки", "молотый/в зернах", "описание вкуса", "Цена", "объем упаковки"])
+        # Заполнили таблицу полученными элементами
+        for i, elem in enumerate(result):
+            for j, val in enumerate(elem):
+                flag = False
+                if j == 3:
+                    val2 = cur.execute('SELECT title from ground / beans WHERE id =' + str(int(val))).fetchall()[0][0]
+                    self.resultWidget.setItem(i, j, QTableWidgetItem(str(val2)))
+                    flag = True
+                if not flag:
+                    self.resultWidget.setItem(i, j, QTableWidgetItem(str(val)))
+                    self.resultWidget.setItem(i, 6, QTableWidgetItem(str(int(elem[3]) * int(elem[5]))))
+        self.resultWidget.resizeColumnsToContents()
+        header = self.resultWidget.horizontalHeader()
+        header.setStretchLastSection(False)
+        header.setStretchLastSection(True)
 
 
 if __name__ == '__main__':
