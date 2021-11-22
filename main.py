@@ -3,7 +3,7 @@ import sys
 import sqlite3
 from PyQt5 import uic
 from PyQt5.QtGui import QPainter, QColor
-from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow
+from PyQt5.QtWidgets import QWidget, QApplication, QMainWindow, QTableWidgetItem
 
 
 class Example(QMainWindow):
@@ -29,12 +29,11 @@ class Example(QMainWindow):
             for j, val in enumerate(elem):
                 flag = False
                 if j == 3:
-                    val2 = cur.execute('SELECT title from ground / beans WHERE id =' + str(int(val))).fetchall()[0][0]
+                    val2 = cur.execute('SELECT title from "ground / beans" WHERE id =' + str(int(val))).fetchall()[0][0]
                     self.resultWidget.setItem(i, j, QTableWidgetItem(str(val2)))
                     flag = True
                 if not flag:
                     self.resultWidget.setItem(i, j, QTableWidgetItem(str(val)))
-                    self.resultWidget.setItem(i, 6, QTableWidgetItem(str(int(elem[3]) * int(elem[5]))))
         self.resultWidget.resizeColumnsToContents()
         header = self.resultWidget.horizontalHeader()
         header.setStretchLastSection(False)
